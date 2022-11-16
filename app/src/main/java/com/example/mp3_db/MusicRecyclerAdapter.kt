@@ -47,8 +47,6 @@ class MusicRecyclerAdapter(val context: Context, val musicList: MutableList<Musi
             intent.putExtra("position", position)
             binding.root.context.startActivity(intent)
         }
-
-
     }
 
     override fun getItemCount(): Int {

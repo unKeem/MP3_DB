@@ -3,10 +3,11 @@ package com.example.mp3_db
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Parcelable
+import android.util.Log
 import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import com.example.mp3_db.databinding.ActivityPlaymusicBinding
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 
 class PlaymusicActivity : AppCompatActivity() {
@@ -51,22 +52,68 @@ class PlaymusicActivity : AppCompatActivity() {
                     mediaPlayer?.seekTo(progress)
                 }
             }
+
             override fun onStartTrackingTouch(p0: SeekBar?) {
             }
 
             override fun onStopTrackingTouch(p0: SeekBar?) {
             }
         })
-        //이벤트 설정 목록버튼 눌렀을때
+        // 목록 버튼
         binding.listButton.setOnClickListener {
             mediaPlayer?.stop()
             messengerJob?.cancel()
-            mediaPlayer?.release()
-            mediaPlayer = null
-            finish()
+//            mediaPlayer?.release()
+//            mediaPlayer = null
+            finish() // PlayActivity 종료
         }
+        // 정지 버튼
+        binding.stopButton.setOnClickListener {
+            mediaPlayer?.stop()
+            messengerJob?.cancel()
+            mediaPlayer = MediaPlayer.create(this, music?.getMusicUri())
+            binding.seekBar.progress = 0
+            binding.playDuration.text = "00:00"
+            binding.playButton.setImageResource(R.drawable.ic_baseline_play_arrow_24)
+        }
+        //이벤트설정 재생버튼
+        binding.playButton.setOnClickListener {
+            if (mediaPlayer?.isPlaying == true) {
+                mediaPlayer?.pause()
+                binding.playButton.setImageResource(R.drawable.ic_baseline_play_arrow_24)
+            } else {
+                mediaPlayer?.start()
+                binding.playButton.setImageResource(R.drawable.ic_pause)
 
+                val backgroundScope = CoroutineScope(Dispatchers.Default + Job())
+                messengerJob = backgroundScope.launch {
+                    while (mediaPlayer?.isPlaying == true) {
+
+                        runOnUiThread {
+                            var currentPosition = mediaPlayer?.currentPosition!!
+                            binding.seekBar.progress = currentPosition
+                            val currentDurateion =
+                                SimpleDateFormat("mm:ss").format(mediaPlayer!!.currentPosition)
+                            binding.playDuration.text = currentDurateion
+                        }
+                        try {
+                            // 1초마다 수행되도록 딜레이
+                            delay(1000)
+                        } catch (e: Exception) {
+                            Log.d("로그", "스레드 오류 발생")
+                        }
+                    }//end of while
+                    //노래가 전부 끝나면 처음으로 돌아감(1000을 빼주는 부분은 1초 늦게 반응하는것 사실상 오류이지만)
+                    runOnUiThread {
+                        if (mediaPlayer!!.currentPosition >= (binding.seekBar.max - 1000)) {
+                            binding.seekBar.progress = 0
+                            binding.playDuration.text = "00:00"
+                        }
+                        binding.playButton.setImageResource(R.drawable.ic_baseline_play_arrow_24)
+                    }
+                }//end of messengerJob
+            }
+        }//end of playButton
     }
 }
-
 
