@@ -20,7 +20,7 @@ class Music(
     var artist: String?,
     var albumID: String?,
     var duration: Int?,
-    var Likes: Int?
+    var likes: Int?
 ) : Parcelable {
     //serializable 안쓰고 parcelable사용 하는 이유는 속도를 높이기 위해
     companion object : Parceler<Music> {
@@ -34,7 +34,7 @@ class Music(
             parcel.writeString(artist)
             parcel.writeString(albumID)
             parcel.writeInt(duration!!)
-            parcel.writeInt(Likes!!)
+            parcel.writeInt(likes!!)
         }
     }
 
@@ -48,8 +48,8 @@ class Music(
     )
 
     //앨범 Uri 가져온다
-    fun getAlbumUri(): Uri {
-        return Uri.parse("content://media/external/audio/albumart/" + albumID)
+    private fun getAlbumUri(): Uri {
+        return Uri.parse("content://media/external/audio/albumart/$albumID")
     }
 
     //음악 Uri 가져온다
@@ -62,37 +62,32 @@ class Music(
         val contentResolver: ContentResolver = context.contentResolver
         val uri = getAlbumUri() //앨범경로
         val options = BitmapFactory.Options()
-
-        if (uri != null) {
-            var parcelFileDescriptor: ParcelFileDescriptor? = null
+        var parcelFileDescriptor: ParcelFileDescriptor? = null
+        var bitmap: Bitmap?
+        try {
+            parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "read")
+            bitmap = BitmapFactory.decodeFileDescriptor(
+                parcelFileDescriptor?.fileDescriptor,
+                null,
+                options
+            )
+            //비트맵을 가져왔는데 우리가 원하는 사이즈가 아닐경우를 위해서 처리
+            if (bitmap != null) {
+                val tempBitmap =
+                    Bitmap.createScaledBitmap(bitmap, albumImageSize, albumImageSize, true)
+                bitmap.recycle()
+                bitmap = tempBitmap
+            }
+            return bitmap
+        } catch (e: java.lang.Exception) {
+            Log.d("mp3_db", "getAlbumImage 함수에 에러 발생 _1")
+        } finally {
             try {
-                contentResolver.openFileDescriptor(uri, "r") //파일로 가져옴
-                var bitmap = BitmapFactory.decodeFileDescriptor(
-                    parcelFileDescriptor!!.fileDescriptor,
-                    null,
-                    options
-                )
-
-                //비트맵을 가져왔는데 우리가 원하는 사이즈가 아닐경우를 위해서 처리
-                if (bitmap != null) {
-                    val tempBitmap =
-                        Bitmap.createScaledBitmap(bitmap, albumImageSize, albumImageSize, true)
-                    bitmap.recycle()
-                    bitmap = tempBitmap
-                }
-
+                parcelFileDescriptor?.close()
             } catch (e: java.lang.Exception) {
-                Log.d("mp3_db", "getAlbumImage 함수에 에러 발생")
-            } finally {
-                try {
-                    parcelFileDescriptor?.close()
-                } catch (e: java.lang.Exception) {
-                    Log.d("mp3_db", "getAlbumImage 함수에 에러 발생")
-                }
+                Log.d("mp3_db", "getAlbumImage 함수에 에러 발생 _2")
             }
         }
         return null
     }
-
-
 }

@@ -32,21 +32,21 @@ class PlaymusicActivity : AppCompatActivity() {
         position = intent.getIntExtra("position", 0)
         music = playList?.get(position) as Music
         //화면에 바인딩
-        binding.albumTitle.text = music?.title
-        binding.albumArtist.text = music?.artist
+        binding.tvMusicTitle.text = music?.title
+        binding.tvMusician.text = music?.artist
         binding.totalDuration.text = SimpleDateFormat("mm:ss").format(music?.duration)
         binding.playDuration.text = "00:00"
         val bitmap = music?.getAlbumImage(this, ALBUM_SIZE)
         if (bitmap != null) {
-            binding.albumImage.setImageBitmap(bitmap)
+            binding.ivAlbumCover.setImageBitmap(bitmap)
         } else {
-            binding.albumImage.setImageResource(R.drawable.ic_music)
+            binding.ivAlbumCover.setImageResource(R.drawable.ic_music)
         }
         //음악등록
         mediaPlayer = MediaPlayer.create(this, music?.getMusicUri())
         //시크바 재생위치 결정
-        binding.seekBar.max = mediaPlayer!!.duration
-        binding.seekBar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+        binding.seekBarNew.max = mediaPlayer!!.duration
+        binding.seekBarNew.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
                     mediaPlayer?.seekTo(progress)
@@ -60,7 +60,7 @@ class PlaymusicActivity : AppCompatActivity() {
             }
         })
         // 목록 버튼
-        binding.listButton.setOnClickListener {
+        binding.btnPlaylist.setOnClickListener {
             mediaPlayer?.stop()
             messengerJob?.cancel()
 //            mediaPlayer?.release()
@@ -68,22 +68,22 @@ class PlaymusicActivity : AppCompatActivity() {
             finish() // PlayActivity 종료
         }
         // 정지 버튼
-        binding.stopButton.setOnClickListener {
+        binding.btnStop.setOnClickListener {
             mediaPlayer?.stop()
             messengerJob?.cancel()
             mediaPlayer = MediaPlayer.create(this, music?.getMusicUri())
-            binding.seekBar.progress = 0
+            binding.seekBarNew.progress = 0
             binding.playDuration.text = "00:00"
-            binding.playButton.setImageResource(R.drawable.ic_baseline_play_arrow_24)
+            binding.btnPlayPause.setImageResource(R.drawable.ic_play)
         }
         //이벤트설정 재생버튼
-        binding.playButton.setOnClickListener {
+        binding.btnPlayPause.setOnClickListener {
             if (mediaPlayer?.isPlaying == true) {
                 mediaPlayer?.pause()
-                binding.playButton.setImageResource(R.drawable.ic_baseline_play_arrow_24)
+                binding.btnPlayPause.setImageResource(R.drawable.ic_play)
             } else {
                 mediaPlayer?.start()
-                binding.playButton.setImageResource(R.drawable.ic_pause)
+                binding.btnPlayPause.setImageResource(R.drawable.ic_pause)
 
                 val backgroundScope = CoroutineScope(Dispatchers.Default + Job())
                 messengerJob = backgroundScope.launch {
@@ -91,7 +91,7 @@ class PlaymusicActivity : AppCompatActivity() {
 
                         runOnUiThread {
                             var currentPosition = mediaPlayer?.currentPosition!!
-                            binding.seekBar.progress = currentPosition
+                            binding.seekBarNew.progress = currentPosition
                             val currentDurateion =
                                 SimpleDateFormat("mm:ss").format(mediaPlayer!!.currentPosition)
                             binding.playDuration.text = currentDurateion
@@ -105,15 +105,18 @@ class PlaymusicActivity : AppCompatActivity() {
                     }//end of while
                     //노래가 전부 끝나면 처음으로 돌아감(1000을 빼주는 부분은 1초 늦게 반응하는것 사실상 오류이지만)
                     runOnUiThread {
-                        if (mediaPlayer!!.currentPosition >= (binding.seekBar.max - 1000)) {
-                            binding.seekBar.progress = 0
+                        if (mediaPlayer!!.currentPosition >= (binding.seekBarNew.max - 1000)) {
+                            binding.seekBarNew.progress = 0
                             binding.playDuration.text = "00:00"
                         }
-                        binding.playButton.setImageResource(R.drawable.ic_baseline_play_arrow_24)
+                        binding.btnPlayPause.setImageResource(R.drawable.ic_play)
                     }
                 }//end of messengerJob
             }
         }//end of playButton
+        binding.btnRewind.setOnClickListener {
+
+        }// rewind
     }
 }
 

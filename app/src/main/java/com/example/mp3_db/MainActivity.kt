@@ -52,7 +52,7 @@ class MainActivity : AppCompatActivity() {
         val musicList: MutableList<Music>? = mutableListOf<Music>()
         //1.음원정보주소(공유메모리에서 음원 정보)
         val musicURL = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-        //2.음원에서 가져올 정보의 매열
+        //2.음원에서 가져올 정보의 배열
         val projection = arrayOf(
             MediaStore.Audio.Media._ID,
             MediaStore.Audio.Media.TITLE,
@@ -82,15 +82,8 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    //외부저장소를 읽을 권한이 있는지 체크
     private fun isPermitted(): Boolean{
         return ContextCompat.checkSelfPermission(this, permissions[0]) == PackageManager.PERMISSION_GRANTED
     }
-
-    //외부저장소를 읽을 권한이 있는지 체크
-//    private fun isPermitted(): Boolean {
-//        return ContextCompat.checkSelfPermission(
-//            this,
-//            permissions[0]
-//        ) != PackageManager.PERMISSION_GRANTED
-//    }
 }

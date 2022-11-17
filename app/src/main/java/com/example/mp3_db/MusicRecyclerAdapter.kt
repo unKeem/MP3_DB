@@ -35,13 +35,13 @@ class MusicRecyclerAdapter(val context: Context, val musicList: MutableList<Musi
         } else {
             binding.ivAlbumArt.setImageResource(R.drawable.ic_music)
         }
-        when (music?.Likes) {
+        when (music?.likes) {
             0 -> binding.ivItemLike.setImageResource(R.drawable.ic_star_outline)
             1 -> binding.ivItemLike.setImageResource(R.drawable.ic_star)
         }
         //이벤트처리
         binding.root.setOnClickListener{
-            val playList: ArrayList<Parcelable>? = musicList as ArrayList<Parcelable>
+            val playList: ArrayList<Parcelable> = musicList as ArrayList<Parcelable>
             val intent = Intent(binding.root.context, PlaymusicActivity::class.java)
             intent.putExtra("playList", playList)
             intent.putExtra("position", position)
