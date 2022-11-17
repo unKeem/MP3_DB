@@ -61,12 +61,13 @@ class PlaymusicActivity : AppCompatActivity() {
         })
         // 목록 버튼
         binding.btnPlaylist.setOnClickListener {
-            mediaPlayer?.stop()
             messengerJob?.cancel()
-//            mediaPlayer?.release()
-//            mediaPlayer = null
+            mediaPlayer?.stop()
             finish() // PlayActivity 종료
         }
+
+
+
         // 정지 버튼
         binding.btnStop.setOnClickListener {
             mediaPlayer?.stop()

@@ -48,7 +48,7 @@ class Music(
     )
 
     //앨범 Uri 가져온다
-    private fun getAlbumUri(): Uri {
+    fun getAlbumUri(): Uri {
         return Uri.parse("content://media/external/audio/albumart/$albumID")
     }
 
@@ -61,31 +61,32 @@ class Music(
     fun getAlbumImage(context: Context, albumImageSize: Int): Bitmap? {
         val contentResolver: ContentResolver = context.contentResolver
         val uri = getAlbumUri() //앨범경로
-        val options = BitmapFactory.Options()
-        var parcelFileDescriptor: ParcelFileDescriptor? = null
-        var bitmap: Bitmap?
-        try {
-            parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "read")
-            bitmap = BitmapFactory.decodeFileDescriptor(
-                parcelFileDescriptor?.fileDescriptor,
-                null,
-                options
-            )
-            //비트맵을 가져왔는데 우리가 원하는 사이즈가 아닐경우를 위해서 처리
-            if (bitmap != null) {
-                val tempBitmap =
-                    Bitmap.createScaledBitmap(bitmap, albumImageSize, albumImageSize, true)
-                bitmap.recycle()
-                bitmap = tempBitmap
-            }
-            return bitmap
-        } catch (e: java.lang.Exception) {
-            Log.d("mp3_db", "getAlbumImage 함수에 에러 발생 _1")
-        } finally {
+        val options = BitmapFactory.Options()//비트맵옵션
+        if (uri != null) {
+            var parcelFileDescriptor: ParcelFileDescriptor? = null
             try {
-                parcelFileDescriptor?.close()
+                parcelFileDescriptor = contentResolver.openFileDescriptor(uri, "read")
+                var bitmap = BitmapFactory.decodeFileDescriptor(
+                    parcelFileDescriptor?.fileDescriptor,
+                    null,
+                    options
+                )
+                //비트맵을 가져왔는데 우리가 원하는 사이즈가 아닐경우를 위해서 처리
+                if (bitmap != null) {
+                    val tempBitmap =
+                        Bitmap.createScaledBitmap(bitmap, albumImageSize, albumImageSize, true)
+                    bitmap.recycle()
+                    bitmap = tempBitmap
+                }
+                return bitmap
             } catch (e: java.lang.Exception) {
-                Log.d("mp3_db", "getAlbumImage 함수에 에러 발생 _2")
+                Log.d("mp3_db", "getAlbumImage 함수에 에러 발생 _1")
+            } finally {
+                try {
+                    parcelFileDescriptor?.close()
+                } catch (e: java.lang.Exception) {
+                    Log.d("mp3_db", "getAlbumImage 함수에 에러 발생 _2")
+                }
             }
         }
         return null
